@@ -2,10 +2,7 @@
 #define LIB_CQ_MENTAL_HELPERS_H
 
 #include <string>
-#include <memory>
-#include <algorithm>
 #include <vector>
-#include <iostream>
 #include <print>
 #include <unordered_map>
 #include <map>
@@ -125,17 +122,6 @@ void test(void)
 	std::println("blah testing...");
 }
 
-/*
-template<typename FirstType, typename SecondType>
-void print(const StdPair<FirstType, SecondType> &p);
-
-template<typename T>
-void print(const StdVector<T> &v);
-
-template<typename KeyType, typename ValueType, template<typename, typename> class MapType>
-void print(const MapType<KeyType, ValueType> &m);
-*/
-
 template<typename T>
 void print(const T &t)
 {
@@ -159,46 +145,32 @@ void print(const StdVector<T> &v)
 	int n = 0;
 	for(const auto &e : v)
 	{
+		print(e);
 		if(n < v.size() - 1)
 		{
-			print(e);
 			std::print(", ");
 			++n;
-		} else print(e);
+		}
 	}
 	std::print("]");
 }
 
-template<typename KeyType, typename ValueType> //template<typename, typename> class MapType>
+template<typename KeyType, typename ValueType>
 void print(const StdMap<KeyType, ValueType> &m)
 {
 	print("{");
 	int n = 0;
-	for(const auto &[key, value] : m)
+	for(const auto &p : m)
 	{
-		print("(");
-		print(key);
-		print(", ");
-		print(value);
+		print(p);
 		if(n < m.size() - 1)
 		{
-			print("), ");
+			print(", ");
 			++n;
-		} else print(")");
+		}
 	}
 	print("}");
 }
-
-/*
-template<typename FirstType, typename SecondType>
-void println(const StdPair<FirstType, SecondType> &p);
-
-template<typename T>
-void println(const StdVector<T> &v);
-
-template<typename KeyType, typename ValueType, template<typename, typename> class MapType>
-void println(const MapType<KeyType, ValueType> &m);
-*/
 
 template<typename T>
 void println(const T &t)
@@ -220,52 +192,45 @@ void println(const StdVector<T> &v)
 	std::print("\n");
 }
 
-template<typename KeyType, typename ValueType> //template<typename, typename> class MapType>
+template<typename KeyType, typename ValueType>
 void println(const StdMap<KeyType, ValueType> &m)
 {
 
 	print("{\n");
 	int n = 0;
-	for(const auto &[key, value] : m)
+	for(const auto &p : m)
 	{
-		print("(");
-		print(key);
-		print(", ");
-		print(value);
+		print(p);
 		if(n < m.size() - 1)
 		{
-			print("), ");
+			print(", ");
 			++n;
-		} else print(")");
+		}
 
 		std::print("\n");
 	}
 	print("}\n");
 }
 
-template<typename KeyType, typename ValueType> //template<typename, typename> class MapType>
+template<typename KeyType, typename ValueType>
 void println(const StdUnorderedMap<KeyType, ValueType> &m)
 {
 
 	print("{\n");
 	int n = 0;
-	for(const auto &[key, value] : m)
+	for(const auto &p : m)
 	{
-		print("(");
-		print(key);
-		print(", ");
-		print(value);
+		print(p);
 		if(n < m.size() - 1)
 		{
-			print("), ");
+			print(", ");
 			++n;
-		} else print(")");
+		}
 
 		std::print("\n");
 	}
 	print("}\n");
 }
-
 
 }
 

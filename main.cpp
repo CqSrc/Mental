@@ -1,7 +1,4 @@
-#include <iostream>
 #include <print>
-#include <cmath>
-#include <numbers>
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
@@ -139,7 +136,7 @@ int wordCount(const StdString &str)
 int main(void)
 {
 	const int N_GRAM = 1;
-	const int NUM_ITERS = 32;
+	const int NUM_ITERS = 256;
 
 	std::println("# of lines = {}", testLines.size());
 
@@ -151,7 +148,7 @@ int main(void)
 //	println(cleanWords);
 	auto model = makeMarkovModel(cleanWords, N_GRAM);
 	std::println("# of states = {}", model.size());
-//	println(model);
+	println(model);
 
 	std::random_device rd;
 	std::default_random_engine rne(rd());
@@ -209,8 +206,8 @@ int main(void)
 		n += 1;
 	}
 
-//	auto wc = wordCount(text);
-	std::println("\n\nGenerated text: \"{}\"", text); //wc);
+	auto wc = wordCount(text);
+	std::println("\n\nGenerated text (# of words = {}): \"{}\"", wc, text);
 
 	return 0;
 }
