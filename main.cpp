@@ -58,7 +58,7 @@ StdStringVector makeCleanSentences(const StdStringVector &lines)
 	{
 		StdString trimmedLine = l;
 		trim(trimmedLine);
-		auto sentencesBegin = std::sregex_iterator(trimmedLine.begin(), trimmedLine.end(), sentenceRegex);
+		auto sentencesBegin = std::sregex_iterator(trimmedLine.cbegin(), trimmedLine.cend(), sentenceRegex);
 		auto sentencesEnd = std::sregex_iterator();
 		std::transform(sentencesBegin, sentencesEnd, std::back_inserter(cleanedSentences), [](auto sentence) {
 			return sentence.str();
@@ -111,7 +111,7 @@ MarkovModel makeMarkovModel(const StdStringVector &textLines, int nGram = 3)
 
 	for(const auto &[curState, transition] : model)
 	{
-		float total = std::accumulate(transition.begin(), transition.end(), 0.0f, [](auto curSum, auto tran) {
+		float total = std::accumulate(transition.cbegin(), transition.cend(), 0.0f, [](auto curSum, auto tran) {
 			return curSum + tran.second;
 		});
 
@@ -128,15 +128,15 @@ MarkovModel makeMarkovModel(const StdStringVector &textLines, int nGram = 3)
 int wordCount(const StdString &str)
 {
 	std::regex wordRegex("(\\w+)");
-	auto wordsBegin = std::sregex_iterator(str.begin(), str.end(), wordRegex);
+	auto wordsBegin = std::sregex_iterator(str.cbegin(), str.cend(), wordRegex);
 	auto wordsEnd = std::sregex_iterator();
 	return std::distance(wordsBegin, wordsEnd);
 }
 
 int main(void)
 {
-	const int N_GRAM = 1;
-	const int NUM_ITERS = 256;
+	const int N_GRAM = 3;
+	const int NUM_ITERS = 2048;
 
 	std::println("# of lines = {}", testLines.size());
 
@@ -148,13 +148,16 @@ int main(void)
 //	println(cleanWords);
 	auto model = makeMarkovModel(cleanWords, N_GRAM);
 	std::println("# of states = {}", model.size());
-	println(model);
-
+	//println(model);
 	std::random_device rd;
 	std::default_random_engine rne(rd());
-	MarkovModelStatePairVector randStates;
-	std::sample(model.cbegin(), model.cend(), std::back_inserter(randStates), 1, rne);
-	StdString curState = randStates[0].first;
+
+	auto getRandState = [&rne, &model]() {
+		MarkovModelStatePairVector randStates;
+		std::sample(model.cbegin(), model.cend(), std::back_inserter(randStates), 1, rne);
+		return randStates[0];
+	};
+	StdString curState = getRandState().first;
 	std::println("Starting state = {}", curState);
 //	StdString nextState = NO_WORD;
 	StdString text = curState + " ";
@@ -169,19 +172,26 @@ int main(void)
 	while(n < NUM_ITERS)
 	{
 		StdStringVector possibleWords;
-		auto modelCurStateBegin = model[curState].cbegin();
-		auto modelCurStateEnd = model[curState].cend();
+		const auto modelCurStateBegin = model[curState].cbegin();
+		const auto modelCurStateEnd = model[curState].cend();
 
+		possibleWords.reserve(std::distance(modelCurStateBegin, modelCurStateEnd));
 		std::transform(modelCurStateBegin, modelCurStateEnd, std::back_inserter(possibleWords), [](auto tran) {
 			return tran.first;
 		});
 
-		if(possibleWords.size() == 0) break;
+		if(possibleWords.size() == 0)
+		{
+			curState = getRandState().first;
+			++n;
+			continue;
+		}
 
-		std::print("curState = \"{}\", possible next words = ", curState);
-		println(possibleWords);
+		//std::print("curState = \"{}\", possible next words = ", curState);
+		//println(possibleWords);
 
 		StdVector<float> probabilities;
+		probabilities.reserve(possibleWords.size());
 		std::transform(modelCurStateBegin, modelCurStateEnd, std::back_inserter(probabilities), [](auto tran) {
 			return tran.second;
 		});
@@ -203,7 +213,7 @@ int main(void)
 		curState = randWords[0];
 		text.append(curState + " ");
 
-		n += 1;
+		++n;
 	}
 
 	auto wc = wordCount(text);
