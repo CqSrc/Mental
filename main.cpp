@@ -1,18 +1,15 @@
 #include <print>
-#include <vector>
 #include <algorithm>
-#include <unordered_map>
-#include <map>
-#include <string>
-#include <regex>
 #include <iterator>
 #include <random>
 
 #include "helpers.h"
+#include "markov.h"
 
 using namespace Cq;
 
 const StdString TESTSTR = "Cq here hello world here Cq here good world";
+
 const StdStringVector testLines = {
 //	"This lines of code generate a general purpose Markov model from a given list of cleaned words (cleaned_text).",
 //	"The function considers an n_gram here the default n value is 3 so itb",
@@ -27,111 +24,6 @@ const StdStringVector testLines = {
 	"Down, down, down. Would the fall never come to an end? I wonder how many miles Ive fallen by this time? she said aloud. I must be getting somewhere near the centre of the earth. Let me see: that would be four thousand miles down, I think (for, you see, Alice had learnt several things of this sort in her lessons in the schoolroom, and though this was not a very good opportunity for showing off her knowledge, as there was no one to listen to her, still it was good practice to say it over) yes, thats about the right distance but then I wonder what Latitude or Longitude Ive got to? (Alice had no idea what Latitude was, or Longitude either, but thought they were nice grand words to say.)"
 	"Presently she began again. I wonder if I shall fall right through the earth! How funny it ll seem to come out among the people that walk with their heads downward! The Antipathies, I think (she was rather glad there was no one listening, this time, as it didnt sound at all the right word) but I shall have to ask them what the name of the country is, you know. Please, Maam, is this New Zealand or Australia? (and she tried to curtsey as she spoke fancy curtseying as youre falling through the air! Do you think you could manage it?) And what an ignorant little girl shell think me for asking! No, itll never do to ask: perhaps I shall see it written up somewhere."
 };
-
-#define NO_WORD ""
-
-StdStringVector makeCleanWords(const StdStringVector &lines)
-{
-	StdStringVector cleanedWords;
-	std::regex wordRegex("\\b\\w+\\b");
-
-	for(const auto &l : lines)
-	{
-		StdString trimmedLine = l;
-		trim(trimmedLine);
-		auto wordsBegin = std::sregex_iterator(trimmedLine.begin(), trimmedLine.end(), wordRegex);
-		auto wordsEnd = std::sregex_iterator();
-		std::transform(wordsBegin, wordsEnd, std::back_inserter(cleanedWords), [](auto word) {
-			return word.str();
-		});
-	}
-
-	return cleanedWords;
-}
-
-StdStringVector makeCleanSentences(const StdStringVector &lines)
-{
-	StdStringVector cleanedSentences;
-	std::regex sentenceRegex("[^.!?]*[.!?]");
-
-	for(const auto &l : lines)
-	{
-		StdString trimmedLine = l;
-		trim(trimmedLine);
-		auto sentencesBegin = std::sregex_iterator(trimmedLine.cbegin(), trimmedLine.cend(), sentenceRegex);
-		auto sentencesEnd = std::sregex_iterator();
-		std::transform(sentencesBegin, sentencesEnd, std::back_inserter(cleanedSentences), [](auto sentence) {
-			return sentence.str();
-		});
-	}
-
-	return cleanedSentences;
-}
-
-using MarkovModelStatePair = std::pair<StdString, StdMap<StdString, float>>;
-using MarkovModelStatePairVector = StdVector<MarkovModelStatePair>;
-using MarkovModel = StdMap<StdString, StdMap<StdString, float>>;
-
-MarkovModel makeMarkovModel(const StdStringVector &textLines, int nGram = 3)
-{
-	MarkovModel model;
-	for(int i = 0; i < textLines.size() - nGram; ++i)
-	{
-		StdString curState = NO_WORD, nextState = NO_WORD;
-		for(int j = 0; j < nGram; ++j)
-		{
-			int curIndex = i + j;
-			if(curIndex < textLines.size())
-			{
-				curState.append(textLines[curIndex] + " ");
-			}
-
-			int nextIndex = i + j + nGram;
-			if(nextIndex < textLines.size())
-			{
-				nextState.append(textLines[nextIndex] + " ");
-			}
-		}
-
-		trim(curState);
-		trim(nextState);
-
-		if(model.find(curState) == model.end())
-		{
-			model[curState] = {{nextState, 1.0f}};
-		} else {
-			if(model[curState].find(nextState) != model[curState].end())
-			{
-				model[curState][nextState] += 1.0f;
-			} else {
-				model[curState][nextState] = 1.0f;
-			}
-		}
-	}
-
-	for(const auto &[curState, transition] : model)
-	{
-		float total = std::accumulate(transition.cbegin(), transition.cend(), 0.0f, [](auto curSum, auto tran) {
-			return curSum + tran.second;
-		});
-
-		for(const auto &[state, count] : transition)
-		{
-			model[curState][state] = count / total;
-		}
-
-	}
-
-	return model;
-}
-
-int wordCount(const StdString &str)
-{
-	std::regex wordRegex("(\\w+)");
-	auto wordsBegin = std::sregex_iterator(str.cbegin(), str.cend(), wordRegex);
-	auto wordsEnd = std::sregex_iterator();
-	return std::distance(wordsBegin, wordsEnd);
-}
 
 int main(void)
 {
