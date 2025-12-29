@@ -13,7 +13,15 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(lexy)
 
+FetchContent_Declare(
+	rapidcsv
+	GIT_REPOSITORY "https://github.com/d99kris/rapidcsv.git"
+	GIT_TAG        "v8.90"
+)
+
+FetchContent_MakeAvailable(rapidcsv)
+
 add_executable(mental)
 target_sources(mental PRIVATE main.cpp)
 target_compile_options(mental PRIVATE -O3)
-target_link_libraries(mental PRIVATE foonathan::lexy)
+target_link_libraries(mental PRIVATE foonathan::lexy rapidcsv)
